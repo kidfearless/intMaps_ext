@@ -135,6 +135,7 @@ public:
 
 	bool HasValue(const cell_t key)
 	{
+		return true;
 	}
 };
 
@@ -220,15 +221,45 @@ public:
 #endif
 
 public:
-	static cell_t CreateHandle(IPluginContext *const pContext, pIntMap_t value = nullptr);
-	static HandleError ReadHandle(IPluginContext *const pContext, const Handle_t &handle, pIntMap_t* value);
+	static cell_t CreateHandle(IPluginContext *const pContext);
+	static void ReadHandle(IPluginContext *const pContext, const cell_t *params, pIntMap_t *value);
 }extern g_IntMap;
 
 /**
  * IntMap natives
  */
 
-// cell_t native_DoubleConstructor(IPluginContext *pContext, const cell_t *);
+cell_t Native_IntMapIntMap(IPluginContext *pContext, const cell_t *params);
+
+cell_t Native_IntMap_SetValue(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_SetArray(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params);
+
+cell_t Native_IntMap_GetValue(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_GetString(IPluginContext *pContext, const cell_t *params);
+
+cell_t Native_IntMap_RemoveCell(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_RemoveString(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_RemoveArray(IPluginContext *pContext, const cell_t *params);
+
+cell_t Native_IntMap_RemoveAll(IPluginContext *pContext, const cell_t *params);
+
+cell_t Native_IntMap_ClearCells(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_ClearArrays(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_ClearStrings(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_ClearAll(IPluginContext *pContext, const cell_t *params);
+
+cell_t Native_IntMap_HasCells(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_HasArrays(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_HasStrings(IPluginContext *pContext, const cell_t *params);
+
+cell_t Native_IntMap_SizeGet(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_CellSizeGet(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_StringSizeGet(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_ArraySizeGet(IPluginContext *pContext, const cell_t *params);
+
+
 
 
 extern HandleType_t g_IntMapType;

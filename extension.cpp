@@ -51,7 +51,38 @@ IntMapHandler g_IntMap; /**< Global singleton for extension's main interface */
 
 const sp_nativeinfo_t g_IntMapNatives[] = 
 {
-	{nullptr,					nullptr},
+	{"IntMap.IntMap",					Native_IntMapIntMap},
+
+	{"IntMap.SetValue",					Native_IntMap_SetValue},
+	{"IntMap.SetArray",					Native_IntMap_SetArray},
+	{"IntMap.SetString",				Native_IntMap_SetString},
+
+	{"IntMap.GetValue",					Native_IntMap_GetValue},
+	{"IntMap.GetArray",					Native_IntMap_GetArray},
+	{"IntMap.GetString",				Native_IntMap_GetString},
+
+	{"IntMap.RemoveCell",				Native_IntMap_RemoveCell},
+	{"IntMap.RemoveString",				Native_IntMap_RemoveString},
+	{"IntMap.RemoveArray",				Native_IntMap_RemoveArray},
+
+	{"IntMap.RemoveAll",				Native_IntMap_RemoveAll},
+
+	{"IntMap.ClearCells",				Native_IntMap_ClearCells},
+	{"IntMap.ClearArrays",				Native_IntMap_ClearArrays},
+	{"IntMap.ClearStrings",				Native_IntMap_ClearStrings},
+
+	{"IntMap.ClearAll",					Native_IntMap_ClearAll},
+
+	{"IntMap.HasCells",					Native_IntMap_HasCells},
+	{"IntMap.HasArrays",				Native_IntMap_HasArrays},
+	{"IntMap.HasStrings",				Native_IntMap_HasStrings},
+
+	{"IntMap.Size.get",					Native_IntMap_SizeGet},
+	{"IntMap.CellSize.get",				Native_IntMap_CellSizeGet},
+	{"IntMap.StringSize.get",			Native_IntMap_StringSizeGet},
+	{"IntMap.ArraySize.get",			Native_IntMap_ArraySizeGet},
+
+	{nullptr,							nullptr},
 };
 
 bool IntMapHandler::SDK_OnLoad(char *error, size_t maxlen, bool late)
@@ -61,7 +92,7 @@ bool IntMapHandler::SDK_OnLoad(char *error, size_t maxlen, bool late)
 
 	if (g_IntMapType == 0)
 	{
-		snprintf(error, maxlen, "Could not create Double handle type (err: %d)", err);
+		snprintf(error, maxlen, "Could not create IntMap (err: %d)", err);
 	}
 
 	sharesys->AddNatives(myself, g_IntMapNatives);
@@ -78,14 +109,9 @@ void IntMapHandler::OnHandleDestroy(HandleType_t type, void *object)
 	}
 }
 
-cell_t IntMapHandler::CreateHandle(IPluginContext *const pContext, pIntMap_t value)
+cell_t IntMapHandler::CreateHandle(IPluginContext *const pContext)
 {
 	auto intmap = new IntMap();
-
-	if (value)
-	{
-		*intmap = *value;
-	}
 
 	HandleError handleError;
 	auto handle = handlesys->CreateHandle(g_IntMapType, intmap, pContext->GetIdentity(), myself->GetIdentity(), &handleError);
@@ -93,46 +119,135 @@ cell_t IntMapHandler::CreateHandle(IPluginContext *const pContext, pIntMap_t val
 	if (handle == BAD_HANDLE)
 	{
 		delete intmap;
-		return pContext->ThrowNativeError("Cannot create double handle (err: %d)", handleError);
+		return pContext->ThrowNativeError("Cannot create IntMap (err: %d)", handleError);
 	}
 
 	return static_cast<cell_t>(handle);
 }
 
-HandleError IntMapHandler::ReadHandle(IPluginContext *const pContext, const Handle_t &handle, pIntMap_t *value)
+void IntMapHandler::ReadHandle(IPluginContext *const pContext, const cell_t *params, pIntMap_t *value)
 {
 	HandleSecurity security(pContext->GetIdentity(), myself->GetIdentity());
 
-	return handlesys->ReadHandle(handle, g_IntMapType, &security, reinterpret_cast<void**>(value));
+	auto error = handlesys->ReadHandle(static_cast<Handle_t>(params[1]), g_IntMapType, &security, reinterpret_cast<void**>(value));
+
+	if (error != HandleError_None)
+	{
+		pContext->ThrowNativeError("Error with reading IntMap Handle (err: %d)", error);
+	} 
 }
 
-/* cell_t native_DoubleConstructor(IPluginContext *pContext, const cell_t *)
+cell_t Native_IntMapIntMap(IPluginContext *pContext, const cell_t *params)
 {
-	return IntMap::CreateHandle(pContext);
+	return IntMapHandler::CreateHandle(pContext);
 }
 
-cell_t native_DoubleFromString(IPluginContext *pContext, const cell_t *params)
+cell_t Native_IntMap_SetValue(IPluginContext *pContext, const cell_t *params)
 {
-	char *str;
-	pContext->LocalToString(params[1], &str);
-
-	auto value = std::atof(str);
-
-	return IntMap::CreateHandle(pContext, &value);
+	pIntMap_t value;
+	IntMapHandler::ReadHandle(pContext, params, &value);
+	return 0;
 }
 
-cell_t native_DoubleFromFloat(IPluginContext *pContext, const cell_t *params)
+cell_t Native_IntMap_SetArray(IPluginContext *pContext, const cell_t *params)
 {
-	auto value = static_cast<double>(sp_ctof(params[1]));
-	
-	return IntMap::CreateHandle(pContext, &value);
+	return 0;
 }
 
-cell_t native_DoubleFromInt(IPluginContext *pContext, const cell_t *params)
+cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params)
 {
-	auto value = static_cast<double>(params[1]);
+	return 0;
+}
 
-	return IntMap::CreateHandle(pContext, &value);
-} */
+cell_t Native_IntMap_GetValue(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_GetString(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_RemoveCell(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_RemoveString(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_RemoveArray(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_RemoveAll(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_ClearCells(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_ClearArrays(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_ClearStrings(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_ClearAll(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_HasCells(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_HasArrays(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_HasStrings(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_SizeGet(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_CellSizeGet(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_StringSizeGet(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
+cell_t Native_IntMap_ArraySizeGet(IPluginContext *pContext, const cell_t *params)
+{
+	return 0;
+}
+
 
 SMEXT_LINK(&g_IntMap);
