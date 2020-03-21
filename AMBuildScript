@@ -209,9 +209,9 @@ class ExtensionConfig(object):
       '-mmacosx-version-min=10.5',
       '-arch', 'i386',
       '-lstdc++',
-      '-stdlib=libstdc++',
+      '-stdlib=static-libstdc++',
     ]
-    cxx.cxxflags += ['-stdlib=libstdc++']
+    cxx.cxxflags += ['-stdlib=static-libstdc++']
 
   def configure_windows(self, cxx):
     cxx.defines += ['WIN32', '_WINDOWS']
