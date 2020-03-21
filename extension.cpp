@@ -49,7 +49,7 @@ HandleType_t g_IntMapType = 0;
 
 IntMapHandler g_IntMap; /**< Global singleton for extension's main interface */
 
-const sp_nativeinfo_t g_IntMapNatives[] = 
+const sp_nativeinfo_t g_IntMapNatives[] =
 {
 	{"IntMap.IntMap",					Native_IntMapIntMap},
 
@@ -134,7 +134,7 @@ void IntMapHandler::ReadHandle(IPluginContext *const pContext, const cell_t *par
 	if (error != HandleError_None)
 	{
 		pContext->ThrowNativeError("Error with reading IntMap Handle (err: %d)", error);
-	} 
+	}
 }
 
 cell_t Native_IntMapIntMap(IPluginContext *pContext, const cell_t *params)
@@ -144,8 +144,9 @@ cell_t Native_IntMapIntMap(IPluginContext *pContext, const cell_t *params)
 
 cell_t Native_IntMap_SetValue(IPluginContext *pContext, const cell_t *params)
 {
-	pIntMap_t value;
+	IntMap* value;
 	IntMapHandler::ReadHandle(pContext, params, &value);
+	value->SetValue(params[2], params[3]);
 	return 0;
 }
 
@@ -161,7 +162,9 @@ cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params)
 
 cell_t Native_IntMap_GetValue(IPluginContext *pContext, const cell_t *params)
 {
-	return 0;
+	IntMap* value;
+	IntMapHandler::ReadHandle(pContext, params, &value);
+	return value->GetValue(params[2]);
 }
 
 cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params)
