@@ -38,9 +38,7 @@
 #include <string>
 #include <map>
 
-
 HandleType_t g_IntMapType = 0;
-
 
 /**
  * @file extension.cpp
@@ -59,6 +57,7 @@ const sp_nativeinfo_t g_IntMapNatives[] =
 
 	{"IntMap.GetValue",					Native_IntMap_GetValue},
 	{"IntMap.GetArray",					Native_IntMap_GetArray},
+	{"IntMap.GetArrayCell",				Native_IntMap_GetArrayCell},
 	{"IntMap.GetString",				Native_IntMap_GetString},
 
 	{"IntMap.RemoveCell",				Native_IntMap_RemoveCell},
@@ -99,6 +98,11 @@ bool IntMapHandler::SDK_OnLoad(char *error, size_t maxlen, bool late)
 	sharesys->RegisterLibrary(myself, "intmap_ext");
 
 	return true;
+}
+
+void IntMapHandler::SDK_OnUnload()
+{
+	handlesys->RemoveType(g_IntMapType, myself->GetIdentity());
 }
 
 void IntMapHandler::OnHandleDestroy(HandleType_t type, void *object)
@@ -152,11 +156,29 @@ cell_t Native_IntMap_SetValue(IPluginContext *pContext, const cell_t *params)
 
 cell_t Native_IntMap_SetArray(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	cell_t key = params[2];
+	cell_t localAddress = params[3];
+	cell_t length = params[4];
+
+	if (params[4] < 0)
+	{
+		return pContext->ThrowNativeError("Invalid array size: %d", params[4]);
+	}
+
+	cell_t* array;
+	pContext->LocalToPhysAddr(params[3], &array);
+
+	intmap->SetArray(params[2], array, params[4]);
+
 	return 0;
 }
 
 cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params)
 {
+	
 	return 0;
 }
 
@@ -164,12 +186,40 @@ cell_t Native_IntMap_GetValue(IPluginContext *pContext, const cell_t *params)
 {
 	IntMap* value;
 	IntMapHandler::ReadHandle(pContext, params, &value);
+
 	return value->GetValue(params[2]);
 }
 
 cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+	
+	cell_t key = params[2];
+	cell_t localAddress = params[3];
+	cell_t length = params[4];
+
+	if (params[4] < 0)
+	{
+		return pContext->ThrowNativeError("Invalid array size: %d", params[4]);
+	}
+
+	cell_t* array;
+	pContext->LocalToPhysAddr(params[3], &array);
+
+	memcpy(array, intmap->GetArray(params[2]).data(), sizeof(cell_t) * intmap->GetArray(params[2]).size());
+
 	return 0;
+}
+
+cell_t Native_IntMap_GetArrayCell(IPluginContext *pContext, const cell_t *params)
+{
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	cell_t key = params[2];
+	cell_t index = params[3];
+	return intmap->GetArrayCell(key, index);
 }
 
 cell_t Native_IntMap_GetString(IPluginContext *pContext, const cell_t *params)

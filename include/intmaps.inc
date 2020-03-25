@@ -21,11 +21,12 @@ methodmap IntMap < Handle
 	public native IntMap();
 
 	public native void SetValue(const int key, any value);
-	public native void SetArray(const int key, any value[], int maxlength);
+	public native void SetArray(const int key, any[] value, int maxlength);
 	public native void SetString(const int key, const char[] value);
 
 	public native any  GetValue(const int key);
-	public native void GetArray(const int key, any[] value);
+	public native void GetArray(const int key, any[] value, int maxlength);
+	public native any  GetArrayCell(const int key, int index);
 	public native void GetString(const int key, char[] value, int maxlength);
 
 	public native void RemoveCell(const int key);

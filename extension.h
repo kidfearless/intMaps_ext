@@ -67,13 +67,11 @@ public:
 	}
 
 	// Sets an array value in a Map, either inserting a new entry or replacing an old one.
-	void SetArray(const cell_t key, cell_t arr[], cell_t num_items)
+	void SetArray(const cell_t key, cell_t *address, cell_t num_items)
 	{
 		std::vector<cell_t> vector;
-		for (int i = 0; i < num_items; ++i)
-		{
-			vector[i] = arr[i];
-		}
+		vector.assign(address, address + num_items);
+		
 		this->multicells[key] = vector;
 	}
 
@@ -94,6 +92,11 @@ public:
 	std::vector<cell_t> GetArray(const cell_t key)
 	{
 		return this->multicells[key];
+	}
+
+	cell_t GetArrayCell(const cell_t key, const cell_t cell)
+	{
+		return this->multicells[key][cell];
 	}
 
 	// Retrieves a string in a Map.
@@ -139,7 +142,7 @@ public:
 	}
 };
 
-using pIntMap_t = IntMap*;
+using pIntMap_t = IntMap *;
 
 /**
  * @brief IntMap implementation of the SDK Extension.
@@ -148,8 +151,8 @@ using pIntMap_t = IntMap*;
 class IntMapHandler : public SDKExtension, public IHandleTypeDispatch
 {
 public:
-    // IHandleTypeDispatch::OnHandleDestroy
-    virtual void OnHandleDestroy(HandleType_t type, void *object);
+	// IHandleTypeDispatch::OnHandleDestroy
+	virtual void OnHandleDestroy(HandleType_t type, void *object);
 
 public:
 	/**
@@ -161,11 +164,11 @@ public:
 	 * @return			True to succeed loading, false to fail.
 	 */
 	virtual bool SDK_OnLoad(char *error, size_t maxlen, bool late);
-	
+
 	/**
 	 * @brief This is called right before the extension is unloaded.
 	 */
-	//virtual void SDK_OnUnload();
+	virtual void SDK_OnUnload();
 
 	/**
 	 * @brief This is called once all known extensions have been loaded.
@@ -223,7 +226,7 @@ public:
 public:
 	static cell_t CreateHandle(IPluginContext *const pContext);
 	static void ReadHandle(IPluginContext *const pContext, const cell_t *params, pIntMap_t *value);
-}extern g_IntMap;
+} extern g_IntMap;
 
 /**
  * IntMap natives
@@ -237,6 +240,7 @@ cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params);
 
 cell_t Native_IntMap_GetValue(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_GetArrayCell(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_GetString(IPluginContext *pContext, const cell_t *params);
 
 cell_t Native_IntMap_RemoveCell(IPluginContext *pContext, const cell_t *params);
@@ -258,8 +262,6 @@ cell_t Native_IntMap_SizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_CellSizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_StringSizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_ArraySizeGet(IPluginContext *pContext, const cell_t *params);
-
-
 
 
 extern HandleType_t g_IntMapType;
