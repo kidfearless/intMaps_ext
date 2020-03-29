@@ -66,6 +66,12 @@ public:
 		this->cells[key] = value;
 	}
 
+	// Retrieves a value in a Map.
+	cell_t GetValue(const cell_t key)
+	{
+		return this->cells[key];
+	}
+
 	// Sets an array value in a Map, either inserting a new entry or replacing an old one.
 	void SetArray(const cell_t key, cell_t *address, cell_t num_items)
 	{
@@ -73,19 +79,6 @@ public:
 		vector.assign(address, address + num_items);
 		
 		this->multicells[key] = vector;
-	}
-
-	// Sets a string value in a Map, either inserting a new entry or replacing an old one.
-	void SetString(const cell_t key, const char *value)
-	{
-		std::string string(value);
-		this->strings[key] = value;
-	}
-
-	// Retrieves a value in a Map.
-	cell_t GetValue(const cell_t key)
-	{
-		return this->cells[key];
 	}
 
 	// Retrieves an array in a Map.
@@ -97,6 +90,13 @@ public:
 	cell_t GetArrayCell(const cell_t key, const cell_t cell)
 	{
 		return this->multicells[key][cell];
+	}
+
+	// Sets a string value in a Map, either inserting a new entry or replacing an old one.
+	void SetString(const cell_t key, const char *value)
+	{
+		std::string string(value);
+		this->strings[key] = string;
 	}
 
 	// Retrieves a string in a Map.
@@ -256,13 +256,14 @@ cell_t Native_IntMap_ClearAll(IPluginContext *pContext, const cell_t *params);
 
 cell_t Native_IntMap_HasCells(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_HasArrays(IPluginContext *pContext, const cell_t *params);
-cell_t Native_IntMap_HasStrings(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_HasString(IPluginContext *pContext, const cell_t *params);
 
 cell_t Native_IntMap_SizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_CellSizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_StringSizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_ArraySizeGet(IPluginContext *pContext, const cell_t *params);
 
+void StringCopy(char *dest, size_t maxlength, const char *src);
 
 extern HandleType_t g_IntMapType;
 

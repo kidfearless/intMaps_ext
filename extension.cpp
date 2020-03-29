@@ -74,7 +74,7 @@ const sp_nativeinfo_t g_IntMapNatives[] =
 
 	{"IntMap.HasCells",					Native_IntMap_HasCells},
 	{"IntMap.HasArrays",				Native_IntMap_HasArrays},
-	{"IntMap.HasStrings",				Native_IntMap_HasStrings},
+	{"IntMap.HasStrings",				Native_IntMap_HasString},
 
 	{"IntMap.Size.get",					Native_IntMap_SizeGet},
 	{"IntMap.CellSize.get",				Native_IntMap_CellSizeGet},
@@ -97,6 +97,8 @@ bool IntMapHandler::SDK_OnLoad(char *error, size_t maxlen, bool late)
 	sharesys->AddNatives(myself, g_IntMapNatives);
 	sharesys->RegisterLibrary(myself, "intmap_ext");
 
+	// g_pSM->LogMessage(myself, "%s", buffer);
+
 	return true;
 }
 
@@ -113,6 +115,7 @@ void IntMapHandler::OnHandleDestroy(HandleType_t type, void *object)
 	}
 }
 
+// simplified function to create a handle for us and handle any errors.
 cell_t IntMapHandler::CreateHandle(IPluginContext *const pContext)
 {
 	auto intmap = new IntMap();
@@ -126,9 +129,11 @@ cell_t IntMapHandler::CreateHandle(IPluginContext *const pContext)
 		return pContext->ThrowNativeError("Cannot create IntMap (err: %d)", handleError);
 	}
 
+
 	return static_cast<cell_t>(handle);
 }
 
+// simplified function to take a native and spit out an intmap
 void IntMapHandler::ReadHandle(IPluginContext *const pContext, const cell_t *params, pIntMap_t *value)
 {
 	HandleSecurity security(pContext->GetIdentity(), myself->GetIdentity());
@@ -141,11 +146,13 @@ void IntMapHandler::ReadHandle(IPluginContext *const pContext, const cell_t *par
 	}
 }
 
+//	public native IntMap();
 cell_t Native_IntMapIntMap(IPluginContext *pContext, const cell_t *params)
 {
 	return IntMapHandler::CreateHandle(pContext);
 }
 
+// 	public native void SetValue(const int key, any value);
 cell_t Native_IntMap_SetValue(IPluginContext *pContext, const cell_t *params)
 {
 	IntMap* value;
@@ -154,6 +161,16 @@ cell_t Native_IntMap_SetValue(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+// public native any  GetValue(const int key);
+cell_t Native_IntMap_GetValue(IPluginContext *pContext, const cell_t *params)
+{
+	IntMap *value;
+	IntMapHandler::ReadHandle(pContext, params, &value);
+
+	return value->GetValue(params[2]);
+}
+
+// public native void SetArray(const int key, any[] value, int maxlength);
 cell_t Native_IntMap_SetArray(IPluginContext *pContext, const cell_t *params)
 {
 	IntMap *intmap;
@@ -176,25 +193,12 @@ cell_t Native_IntMap_SetArray(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
-cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params)
-{
-	
-	return 0;
-}
-
-cell_t Native_IntMap_GetValue(IPluginContext *pContext, const cell_t *params)
-{
-	IntMap* value;
-	IntMapHandler::ReadHandle(pContext, params, &value);
-
-	return value->GetValue(params[2]);
-}
-
+// public native void GetArray(const int key, any[] value, int maxlength);
 cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params)
 {
 	IntMap *intmap;
 	IntMapHandler::ReadHandle(pContext, params, &intmap);
-	
+
 	cell_t key = params[2];
 	cell_t localAddress = params[3];
 	cell_t length = params[4];
@@ -204,7 +208,7 @@ cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid array size: %d", params[4]);
 	}
 
-	cell_t* array;
+	cell_t *array;
 	pContext->LocalToPhysAddr(params[3], &array);
 
 	memcpy(array, intmap->GetArray(params[2]).data(), sizeof(cell_t) * intmap->GetArray(params[2]).size());
@@ -212,6 +216,7 @@ cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+// public native any  GetArrayCell(const int key, int index);
 cell_t Native_IntMap_GetArrayCell(IPluginContext *pContext, const cell_t *params)
 {
 	IntMap *intmap;
@@ -222,85 +227,141 @@ cell_t Native_IntMap_GetArrayCell(IPluginContext *pContext, const cell_t *params
 	return intmap->GetArrayCell(key, index);
 }
 
-cell_t Native_IntMap_GetString(IPluginContext *pContext, const cell_t *params)
+// public native void SetString(const int key, const char[] value);
+cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	char *paramString;
+	pContext->LocalToString(params[3], &paramString);
+
+	intmap->SetString(params[2], paramString);
+
 	return 0;
 }
 
+// public native void GetString(const int key, char[] value, int maxlength);
+cell_t Native_IntMap_GetString(IPluginContext *pContext, const cell_t *params)
+{
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	std::string string = intmap->GetString(params[2]);
+
+	char *paramString;
+	pContext->LocalToString(params[3], &paramString);
+
+	StringCopy(paramString, params[4], string.c_str());
+
+	return 0;
+}
+
+// public native void RemoveCell(const int key);
 cell_t Native_IntMap_RemoveCell(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native void RemoveString(const int key);
 cell_t Native_IntMap_RemoveString(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native void RemoveArray(const int key);
 cell_t Native_IntMap_RemoveArray(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native void RemoveAll(const int key);
 cell_t Native_IntMap_RemoveAll(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native void ClearCells();
 cell_t Native_IntMap_ClearCells(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native void ClearArrays();
 cell_t Native_IntMap_ClearArrays(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native void ClearStrings();
 cell_t Native_IntMap_ClearStrings(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native void ClearAll();
 cell_t Native_IntMap_ClearAll(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native bool HasValue(const int key);
 cell_t Native_IntMap_HasCells(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// public native bool HasArray(const int key);
 cell_t Native_IntMap_HasArrays(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
-cell_t Native_IntMap_HasStrings(IPluginContext *pContext, const cell_t *params)
+// public native bool HasString(const int key);
+cell_t Native_IntMap_HasString(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// property int Size
 cell_t Native_IntMap_SizeGet(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// property int CellSize
 cell_t Native_IntMap_CellSizeGet(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// property int StringSize
 cell_t Native_IntMap_StringSizeGet(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+// property int ArraySize
 cell_t Native_IntMap_ArraySizeGet(IPluginContext *pContext, const cell_t *params)
 {
 	return 0;
 }
 
+void StringCopy(char *dest, size_t maxlength, const char *src)
+{
+	if (!dest || !maxlength)
+	{
+		return;
+	}
+
+	char *iter = dest;
+	size_t count = maxlength;
+	while (*src && --count)
+	{
+		*iter++ = *src++;
+	}
+
+	*iter = '\0';
+}
 
 SMEXT_LINK(&g_IntMap);
