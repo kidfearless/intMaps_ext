@@ -16,6 +16,10 @@
 	}
 */
 
+typedef LoopCellsCallback = function Action(IntMap map, int key, any value, any data);
+typedef LoopArraysCallback = function Action(IntMap map, int key, const any[] values, int size, any data);
+typedef LoopStringsCallback = function Action(IntMap map, int key, const char[] values, int size, any data);
+
 methodmap IntMap < Handle
 {
 	public native IntMap();
@@ -26,9 +30,11 @@ methodmap IntMap < Handle
 	public native void SetArray(const int key, any[] value, int maxlength);
 	public native void GetArray(const int key, any[] value, int maxlength);
 	public native any  GetArrayCell(const int key, int index);
+	public native int  GetArrayLength(const int key);
 
 	public native void SetString(const int key, const char[] value);
 	public native void GetString(const int key, char[] value, int maxlength);
+	public native int  GetStringLength(const int key);
 
 	public native void RemoveCell(const int key);
 	public native void RemoveString(const int key);
@@ -45,18 +51,24 @@ methodmap IntMap < Handle
 	public native bool HasArray(const int key);
 	public native bool HasString(const int key);
 
-	property int Size
-	{
-		public native get();
-	}
+	public native void IterateCells(LoopCellsCallback func, any data = 0);
+
+	// warning: arrays have to be recreated on the heap for each iteration
+	public native void IterateArrays(LoopArraysCallback func, any data = 0);
+	
+	public native void IterateStrings(LoopStringsCallback func, any data = 0);
+
+
 	property int CellSize
 	{
 		public native get();
 	}
+
 	property int StringSize
 	{
 		public native get();
 	}
+	
 	property int ArraySize
 	{
 		public native get();

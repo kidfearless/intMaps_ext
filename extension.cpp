@@ -52,13 +52,17 @@ const sp_nativeinfo_t g_IntMapNatives[] =
 	{"IntMap.IntMap",					Native_IntMapIntMap},
 
 	{"IntMap.SetValue",					Native_IntMap_SetValue},
-	{"IntMap.SetArray",					Native_IntMap_SetArray},
-	{"IntMap.SetString",				Native_IntMap_SetString},
-
 	{"IntMap.GetValue",					Native_IntMap_GetValue},
+
+	{"IntMap.SetArray",					Native_IntMap_SetArray},
 	{"IntMap.GetArray",					Native_IntMap_GetArray},
 	{"IntMap.GetArrayCell",				Native_IntMap_GetArrayCell},
+	{"IntMap.GetArrayLength",			Native_IntMap_GetArrayLength},
+
+
+	{"IntMap.SetString",				Native_IntMap_SetString},
 	{"IntMap.GetString",				Native_IntMap_GetString},
+	{"IntMap.GetStringLength",			Native_IntMap_GetString},
 
 	{"IntMap.RemoveCell",				Native_IntMap_RemoveCell},
 	{"IntMap.RemoveString",				Native_IntMap_RemoveString},
@@ -69,17 +73,23 @@ const sp_nativeinfo_t g_IntMapNatives[] =
 	{"IntMap.ClearCells",				Native_IntMap_ClearCells},
 	{"IntMap.ClearArrays",				Native_IntMap_ClearArrays},
 	{"IntMap.ClearStrings",				Native_IntMap_ClearStrings},
-
 	{"IntMap.ClearAll",					Native_IntMap_ClearAll},
 
-	{"IntMap.HasCells",					Native_IntMap_HasCells},
-	{"IntMap.HasArrays",				Native_IntMap_HasArrays},
-	{"IntMap.HasStrings",				Native_IntMap_HasString},
+	{"IntMap.HasValue",					Native_IntMap_HasCells},
+	{"IntMap.HasArray",					Native_IntMap_HasArrays},
+	{"IntMap.HasString",				Native_IntMap_HasString},
 
-	{"IntMap.Size.get",					Native_IntMap_SizeGet},
+
 	{"IntMap.CellSize.get",				Native_IntMap_CellSizeGet},
 	{"IntMap.StringSize.get",			Native_IntMap_StringSizeGet},
 	{"IntMap.ArraySize.get",			Native_IntMap_ArraySizeGet},
+
+
+	{"IntMap.IterateCells",				Native_IntMap_IterateCells},
+	{"IntMap.IterateArrays",			Native_IntMap_IterateArrays},
+	{"IntMap.IterateStrings",			Native_IntMap_IterateStrings},
+
+
 
 	{nullptr,							nullptr},
 };
@@ -227,6 +237,15 @@ cell_t Native_IntMap_GetArrayCell(IPluginContext *pContext, const cell_t *params
 	return intmap->GetArrayCell(key, index);
 }
 
+// public native int  GetArrayLength(const int key);
+cell_t Native_IntMap_GetArrayLength(IPluginContext *pContext, const cell_t *params)
+{
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	return sizeof(cell_t) * intmap->GetArray(params[2]).size();
+}
+
 // public native void SetString(const int key, const char[] value);
 cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params)
 {
@@ -257,93 +276,198 @@ cell_t Native_IntMap_GetString(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+// public native int  GetStringLength(const int key);
+cell_t Native_IntMap_GetStringLength(IPluginContext *pContext, const cell_t *params)
+{
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	return intmap->GetString(params[2]).size()+1;
+}
+
 // public native void RemoveCell(const int key);
 cell_t Native_IntMap_RemoveCell(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	intmap->RemoveCell(params[2]);
 	return 0;
 }
 
 // public native void RemoveString(const int key);
 cell_t Native_IntMap_RemoveString(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	intmap->RemoveString(params[2]);
 	return 0;
 }
 
 // public native void RemoveArray(const int key);
 cell_t Native_IntMap_RemoveArray(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	intmap->RemoveArray(params[2]);
 	return 0;
 }
 
 // public native void RemoveAll(const int key);
 cell_t Native_IntMap_RemoveAll(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	intmap->RemoveAll(params[2]);
 	return 0;
 }
 
 // public native void ClearCells();
 cell_t Native_IntMap_ClearCells(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	intmap->ClearCells();
+
 	return 0;
 }
 
 // public native void ClearArrays();
 cell_t Native_IntMap_ClearArrays(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	intmap->ClearArrays();
 	return 0;
 }
 
 // public native void ClearStrings();
 cell_t Native_IntMap_ClearStrings(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	intmap->ClearStrings();
 	return 0;
 }
 
 // public native void ClearAll();
 cell_t Native_IntMap_ClearAll(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	intmap->ClearAll();
 	return 0;
 }
 
 // public native bool HasValue(const int key);
 cell_t Native_IntMap_HasCells(IPluginContext *pContext, const cell_t *params)
 {
-	return 0;
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	return intmap->HasValue(params[2]);
 }
 
 // public native bool HasArray(const int key);
 cell_t Native_IntMap_HasArrays(IPluginContext *pContext, const cell_t *params)
 {
-	return 0;
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	return intmap->HasArray(params[2]);
 }
 
 // public native bool HasString(const int key);
 cell_t Native_IntMap_HasString(IPluginContext *pContext, const cell_t *params)
 {
-	return 0;
-}
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
 
-// property int Size
-cell_t Native_IntMap_SizeGet(IPluginContext *pContext, const cell_t *params)
-{
-	return 0;
+	return intmap->HasString(params[2]);
 }
 
 // property int CellSize
 cell_t Native_IntMap_CellSizeGet(IPluginContext *pContext, const cell_t *params)
 {
-	return 0;
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	return intmap->GetValueCount();
 }
 
 // property int StringSize
 cell_t Native_IntMap_StringSizeGet(IPluginContext *pContext, const cell_t *params)
 {
-	return 0;
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	return intmap->GetStringCount();
 }
 
 // property int ArraySize
 cell_t Native_IntMap_ArraySizeGet(IPluginContext *pContext, const cell_t *params)
 {
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	return intmap->GetArrayCount();
+}
+
+// public native void IterateCells(LoopCellsCallback func, any data = 0);
+cell_t Native_IntMap_IterateCells(IPluginContext *pContext, const cell_t *params)
+{
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	IPluginFunction *callbackFunction = pContext->GetFunctionById(params[1]);
+	if (!callbackFunction)
+	{
+		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+	}
+
+	intmap->LoopCells(callbackFunction, params);
+
+	return 0;
+}
+
+// public native void IterateArrays(LoopArraysCallback func, any data = 0);
+cell_t Native_IntMap_IterateArrays(IPluginContext *pContext, const cell_t *params)
+{
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	IPluginFunction *callbackFunction = pContext->GetFunctionById(params[1]);
+	if (!callbackFunction)
+	{
+		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+	}
+
+	intmap->LoopArrays(callbackFunction, params);
+
+	return 0;
+}
+
+// public native void IterateStrings(LoopStringsCallback func, any data = 0);
+cell_t Native_IntMap_IterateStrings(IPluginContext *pContext, const cell_t *params)
+{
+	IntMap *intmap;
+	IntMapHandler::ReadHandle(pContext, params, &intmap);
+
+	IPluginFunction *callbackFunction = pContext->GetFunctionById(params[1]);
+	if (!callbackFunction)
+	{
+		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+	}
+
+	intmap->LoopStrings(callbackFunction, params);
+
 	return 0;
 }
 

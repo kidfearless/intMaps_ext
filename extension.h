@@ -134,11 +134,132 @@ public:
 	// Clears all entries from a Map.
 	void ClearCells()
 	{
+		this->cells.clear();
+	}
+
+	// Clears all entries from a Map.
+	void ClearArrays()
+	{
+		this->multicells.clear();
+	}
+
+	// Clears all entries from a Map.
+	void ClearStrings()
+	{
+		this->strings.clear();
+	}
+
+	void ClearAll()
+	{
+		this->ClearCells();
+		this->ClearArrays();
+		this->ClearStrings();
 	}
 
 	bool HasValue(const cell_t key)
 	{
-		return true;
+		return this->cells.count(key) != 0;
+	}
+
+	bool HasArray(const cell_t key)
+	{
+		return this->multicells.count(key) != 0;
+	}
+
+	bool HasString(const cell_t key)
+	{
+		return this->strings.count(key) != 0;
+	}
+
+	cell_t GetValueCount()
+	{
+		return this->cells.size();
+	}
+
+	cell_t GetStringCount()
+	{
+		return this->strings.size();
+	}
+
+	cell_t GetArrayCount()
+	{
+		return this->multicells.size();
+	}
+
+	// typedef LoopCellsCallback = function Action(IntMap map, int key, any value, any data = 0);
+	void LoopCells(IPluginFunction *callBackFunction, const cell_t *params)
+	{
+		cell_t result = Pl_Continue;
+		cell_t handle = params[1];
+		cell_t data = params[3];
+
+		for (auto i = this->cells.begin(); i != this->cells.end(); ++i)
+		{
+			callBackFunction->PushCell(handle);
+			callBackFunction->PushCell(i->first);
+			callBackFunction->PushCell(i->second);
+			callBackFunction->PushCell(data);
+			callBackFunction->Execute(&result);
+
+			if(result == Pl_Handled)
+			{
+				break;
+			}
+		}
+	}
+	
+	// typedef LoopArraysCallback = function Action(IntMap map, int key, const any[] values, int length, any data);
+	void LoopArrays(IPluginFunction *callBackFunction, const cell_t *params)
+	{
+		cell_t result = Pl_Continue;
+		cell_t handle = params[1];
+		cell_t data = params[3];
+
+		for(auto i = this->multicells.begin(); i != this->multicells.end(); ++i)
+		{
+			callBackFunction->PushCell(handle);
+			callBackFunction->PushCell(i->first);
+
+			cell_t size = sizeof(cell_t) * i->second.size();
+			cell_t *array = new cell_t[size];
+			memcpy(array, i->second.data(), size);
+			callBackFunction->PushArray(array, size);
+
+			callBackFunction->PushCell(size);
+			callBackFunction->PushCell(data);
+			callBackFunction->Execute(&result);
+			
+			delete[] array;
+			if (result == Pl_Handled)
+			{
+				break;
+			}
+		}
+	}
+
+	// typedef LoopStringsCallback = function Action(IntMap map, int key, const char[] values, int size, any data);
+	void LoopStrings(IPluginFunction *callBackFunction, const cell_t *params)
+	{
+		cell_t result = Pl_Continue;
+		cell_t handle = params[1];
+		cell_t data = params[3];
+
+		for (auto i = this->strings.begin(); i != this->strings.end(); ++i)
+		{
+			callBackFunction->PushCell(handle);
+			callBackFunction->PushCell(i->first);
+
+			callBackFunction->PushString(i->second.c_str());
+
+			callBackFunction->PushCell(i->second.size() + 1);
+			callBackFunction->PushCell(data);
+			callBackFunction->Execute(&result);
+			
+			if (result == Pl_Handled)
+			{
+				break;
+			}
+		}
 	}
 };
 
@@ -241,7 +362,9 @@ cell_t Native_IntMap_SetString(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_GetValue(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_GetArrayCell(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_GetArrayLength(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_GetString(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_GetStringLength(IPluginContext *pContext, const cell_t *params);
 
 cell_t Native_IntMap_RemoveCell(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_RemoveString(IPluginContext *pContext, const cell_t *params);
@@ -258,10 +381,13 @@ cell_t Native_IntMap_HasCells(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_HasArrays(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_HasString(IPluginContext *pContext, const cell_t *params);
 
-cell_t Native_IntMap_SizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_CellSizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_StringSizeGet(IPluginContext *pContext, const cell_t *params);
 cell_t Native_IntMap_ArraySizeGet(IPluginContext *pContext, const cell_t *params);
+
+cell_t Native_IntMap_IterateCells(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_IterateArrays(IPluginContext *pContext, const cell_t *params);
+cell_t Native_IntMap_IterateStrings(IPluginContext *pContext, const cell_t *params);
 
 void StringCopy(char *dest, size_t maxlength, const char *src);
 
