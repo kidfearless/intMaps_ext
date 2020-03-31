@@ -53,7 +53,6 @@ methodmap IntMap < Handle
 
 	public native void IterateCells(LoopCellsCallback func, any data = 0);
 
-	// warning: arrays have to be recreated on the heap for each iteration
 	public native void IterateArrays(LoopArraysCallback func, any data = 0);
 	
 	public native void IterateStrings(LoopStringsCallback func, any data = 0);
@@ -74,3 +73,49 @@ methodmap IntMap < Handle
 		public native get();
 	}
 };
+
+public Extension __ext_intmaps =
+{
+	name = "intmaps",
+	file = "intmap.ext",
+	autoload = 1,
+
+#if defined REQUIRE_EXTENSIONS
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_EXTENSIONS
+public void __ext_intmaps_SetNTVOptional()
+{
+	MarkNativeAsOptional("IntMap.IntMap");
+	MarkNativeAsOptional("IntMap.SetValue");
+	MarkNativeAsOptional("IntMap.GetValue");
+	MarkNativeAsOptional("IntMap.SetArray");
+	MarkNativeAsOptional("IntMap.GetArray");
+	MarkNativeAsOptional("IntMap.GetArrayCell");
+	MarkNativeAsOptional("IntMap.GetArrayLength");
+	MarkNativeAsOptional("IntMap.SetString");
+	MarkNativeAsOptional("IntMap.GetString");
+	MarkNativeAsOptional("IntMap.GetStringLength");
+	MarkNativeAsOptional("IntMap.RemoveCell");
+	MarkNativeAsOptional("IntMap.RemoveString");
+	MarkNativeAsOptional("IntMap.RemoveArray");
+	MarkNativeAsOptional("IntMap.RemoveAll");
+	MarkNativeAsOptional("IntMap.ClearCells");
+	MarkNativeAsOptional("IntMap.ClearArrays");
+	MarkNativeAsOptional("IntMap.ClearStrings");
+	MarkNativeAsOptional("IntMap.ClearAll");
+	MarkNativeAsOptional("IntMap.HasValue");
+	MarkNativeAsOptional("IntMap.HasArray");
+	MarkNativeAsOptional("IntMap.HasString");
+	MarkNativeAsOptional("IntMap.CellSize.get");
+	MarkNativeAsOptional("IntMap.StringSize.get");
+	MarkNativeAsOptional("IntMap.ArraySize.get");
+	MarkNativeAsOptional("IntMap.IterateCells");
+	MarkNativeAsOptional("IntMap.IterateArrays");
+	MarkNativeAsOptional("IntMap.IterateStrings");
+}
+#endif

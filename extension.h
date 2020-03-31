@@ -72,12 +72,12 @@ public:
 		return this->cells[key];
 	}
 
-	// Sets an array value in a Map, either inserting a new entry or replacing an old one.
+
 	void SetArray(const cell_t key, cell_t *address, cell_t num_items)
 	{
 		std::vector<cell_t> vector;
 		vector.assign(address, address + num_items);
-		
+
 		this->multicells[key] = vector;
 	}
 
@@ -85,11 +85,6 @@ public:
 	std::vector<cell_t> GetArray(const cell_t key)
 	{
 		return this->multicells[key];
-	}
-
-	cell_t GetArrayCell(const cell_t key, const cell_t cell)
-	{
-		return this->multicells[key][cell];
 	}
 
 	// Sets a string value in a Map, either inserting a new entry or replacing an old one.
@@ -109,19 +104,27 @@ public:
 	void RemoveCell(const cell_t key)
 	{
 		auto index = this->cells.find(key);
-		this->cells.erase(index);
+		if(index != this->cells.end())
+		{
+			this->cells.erase(index);
+		}
 	}
 
 	void RemoveString(const cell_t key)
 	{
 		auto index = this->strings.find(key);
-		this->strings.erase(index);
+		if (index != this->strings.end())
+		{
+			this->strings.erase(index);
+		}
 	}
-
 	void RemoveArray(const cell_t key)
 	{
 		auto index = this->multicells.find(key);
-		this->multicells.erase(index);
+		if (index != this->multicells.end())
+		{
+			this->multicells.erase(index);
+		}
 	}
 
 	void RemoveAll(const cell_t key)
@@ -220,16 +223,12 @@ public:
 			callBackFunction->PushCell(handle);
 			callBackFunction->PushCell(i->first);
 
-			cell_t size = sizeof(cell_t) * i->second.size();
-			cell_t *array = new cell_t[size];
-			memcpy(array, i->second.data(), size);
-			callBackFunction->PushArray(array, size);
-
+			cell_t size = i->second.size();
+			callBackFunction->PushArray(i->second.data(), size);
 			callBackFunction->PushCell(size);
 			callBackFunction->PushCell(data);
 			callBackFunction->Execute(&result);
 			
-			delete[] array;
 			if (result == Pl_Handled)
 			{
 				break;

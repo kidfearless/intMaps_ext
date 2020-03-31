@@ -1,6 +1,35 @@
 #include <sourcemod>
 #include <intmaps>
 
+enum struct test
+{
+	int five[5];
+	char c;
+	int six[6];
+
+	void init()
+	{
+		this.five[0] = this.six[0] = 0;
+		this.five[1] = this.six[1] = 1;
+		this.five[2] = this.six[2] = 2;
+		this.five[3] = this.six[3] = 3;
+		this.five[4] = this.six[4] = 4;
+		this.six[5] = 5;
+		this.c = 'c'; 
+	}
+
+	void Print()
+	{
+		PrintToConsoleAll("%i %i %i %i %i %i %i %i %i %i %i %c",
+			this.five[0], this.six[0],
+			this.five[1], this.six[1],
+			this.five[2], this.six[2],
+			this.five[3], this.six[3],
+			this.five[4], this.six[4],
+			this.six[5], this.c);
+	}
+}
+
 public void OnPluginStart()
 {
 	// public native IntMap();
@@ -20,15 +49,13 @@ public void OnPluginStart()
 	// public native void SetArray(const int key, any[] value, int maxlength);
 	// public native void GetArray(const int key, any[] value, int maxlength);
 	{
-		float input[2] = {15.0, -15.0};
-		map.SetArray(5, input, 2);
+		test t, x;
+		t.init();
+		map.SetArray(5, t, sizeof(test));
 		
-		float arr[2];
-		map.GetArray(5, arr, 2);
+		map.GetArray(5, x, sizeof(test));
 
-		PrintToServer("%f %f", arr[0], arr[1]);
-		PrintToConsoleAll("%f %f", arr[0], arr[1]);
-
+		x.Print();
 		// 15.000000 -15.000000
 	}
 
@@ -62,14 +89,11 @@ public void OnPluginStart()
 		map.RemoveCell(5);
 		map.RemoveString(5);
 		map.RemoveArray(5);
-
+		
 		char buffer[32];
 		map.GetString(5, buffer, 32);
-
-		PrintToServer("%i '%s' %f", map.GetValue(5), buffer, map.GetArrayCell(5, 0));
-		PrintToConsoleAll("%i '%s' %f", map.GetValue(5), buffer, map.GetArrayCell(5, 0));
 	}
-
+	
 	// property int CellSize
 	// property int StringSize
 	// property int ArraySize
@@ -77,12 +101,13 @@ public void OnPluginStart()
 		PrintToServer("size %i %i %i", map.CellSize, map.StringSize, map.ArraySize);
 		PrintToConsoleAll("size %i %i %i", map.CellSize, map.StringSize, map.ArraySize);
 	}
+	
 
 	// public native void RemoveAll(const int key);
 	{
 		map.SetValue(11, 10);
 		map.SetArray(11, {10}, 1);
-		map.SetValue(11, "10");
+		map.SetString(11, "10");
 
 		PrintToServer("bf %i %i %i", map.CellSize, map.StringSize, map.ArraySize);
 		PrintToConsoleAll("bf %i %i %i", map.CellSize, map.StringSize, map.ArraySize);
@@ -100,7 +125,7 @@ public void OnPluginStart()
 	{
 		map.SetValue(10, 10);
 		map.SetArray(10, {10}, 1);
-		map.SetValue(10, "10");
+		map.SetString(10, "10");
 
 		PrintToServer("bf %i %i %i", map.CellSize, map.StringSize, map.ArraySize);
 		PrintToConsoleAll("bf %i %i %i", map.CellSize, map.StringSize, map.ArraySize);
@@ -114,7 +139,7 @@ public void OnPluginStart()
 
 		map.SetValue(10, 10);
 		map.SetArray(10, {10}, 1);
-		map.SetValue(10, "10");
+		map.SetString(10, "10");
 
 		map.ClearAll();
 
@@ -132,7 +157,7 @@ public void OnPluginStart()
 
 		map.SetValue(20, 10);
 		map.SetArray(20, {10}, 1);
-		map.SetValue(20, "10");
+		map.SetString(20, "10");
 	}
 
 	// public native void IterateCells(LoopCellsCallback func, any data = 0);
@@ -173,11 +198,12 @@ public void OnPluginStart()
 				arr[j] = j+48;
 			}
 
-			map.SetString(i, arr, i);
+			map.SetString(i, arr);
 		}
 
 		map.IterateStrings(ForEachString, 100);
 	}
+	
 
 	delete map;
 }
@@ -195,10 +221,15 @@ public Action ForEachCell(IntMap map, int key, any value, any data)
 	return Plugin_Continue;
 }
 
-public Action ForEachArrayAction(IntMap map, int key, const any[] values, int size, any data);
+public Action ForEachArray(IntMap map, int key, const any[] values, int size, any data)
 {
-	PrintToServer("<%i %s>[%i](%i)", key, value, data);
-	PrintToConsoleAll("<%i %s>[%i](%i)", key, value, data);
+	char buffer[128];
+	for(int i = 0; i < size; ++i)
+	{
+		Format(buffer, 128, "%s, %i", buffer, values[i]);
+	}
+	PrintToServer("<%i [%s]>[%i](%i)", key, buffer, size, data);
+	PrintToConsoleAll("<%i [%s]>[%i](%i)", key, buffer, size, data);
 
 	if(key == 15)
 	{
@@ -208,12 +239,12 @@ public Action ForEachArrayAction(IntMap map, int key, const any[] values, int si
 	return Plugin_Continue;
 }
 
-public Action ForEachCell(IntMap map, int key, any value, any data);
+public Action ForEachString(IntMap map, int key, const char[] values, int size, any data)
 {
-	PrintToServer("<%i %i>(%f)", key, value, data);
-	PrintToConsoleAll("<%i %i>(%i)", key, value, data);
+	PrintToServer("<%i %s>[%i](%i)", key, values, size, data);
+	PrintToConsoleAll("<%i %s>[%i](%i)", key, values, size, data);
 
-	if(key == 15)
+	if(key == 5)
 	{
 		return Plugin_Handled;
 	}

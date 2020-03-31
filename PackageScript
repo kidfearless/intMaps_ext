@@ -8,6 +8,7 @@ builder.SetBuildFolder('package')
 # Add any folders you need to this list
 folder_list = [
   'addons/sourcemod/extensions',
+  'addons/sourcemod/scripting',
   'addons/sourcemod/scripting/include',
   #'addons/sourcemod/gamedata',
   #'addons/sourcemod/configs',
@@ -33,9 +34,17 @@ def CopyFiles(src, dest, files):
 #  [ 'sample.inc', ]
 #)
 
-#CopyFiles('include', 'addons/sourcemod/scripting/include',
-#  [ 'intmap.inc', ]
-#)
+CopyFiles('include', 'addons/sourcemod/scripting/include',
+ [ 'intmaps.inc', ]
+)
+
+CopyFiles('scripting', 'addons/sourcemod/scripting',
+ [ 'intmap-test.sp', ]
+)
+
+CopyFiles('extensions', 'addons/sourcemod/extensions',
+ [ 'intmap.autoload', ]
+)
 
 # GameData files
 #CopyFiles('gamedata', 'addons/sourcemod/gamedata',

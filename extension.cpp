@@ -62,7 +62,7 @@ const sp_nativeinfo_t g_IntMapNatives[] =
 
 	{"IntMap.SetString",				Native_IntMap_SetString},
 	{"IntMap.GetString",				Native_IntMap_GetString},
-	{"IntMap.GetStringLength",			Native_IntMap_GetString},
+	{"IntMap.GetStringLength",			Native_IntMap_GetStringLength},
 
 	{"IntMap.RemoveCell",				Native_IntMap_RemoveCell},
 	{"IntMap.RemoveString",				Native_IntMap_RemoveString},
@@ -213,15 +213,15 @@ cell_t Native_IntMap_GetArray(IPluginContext *pContext, const cell_t *params)
 	cell_t localAddress = params[3];
 	cell_t length = params[4];
 
-	if (params[4] < 0)
+	if (length < 0)
 	{
-		return pContext->ThrowNativeError("Invalid array size: %d", params[4]);
+		return pContext->ThrowNativeError("Invalid array size: %d", length);
 	}
 
 	cell_t *array;
-	pContext->LocalToPhysAddr(params[3], &array);
+	pContext->LocalToPhysAddr(localAddress, &array);
 
-	memcpy(array, intmap->GetArray(params[2]).data(), sizeof(cell_t) * intmap->GetArray(params[2]).size());
+	memcpy(array, intmap->GetArray(key).data(), sizeof(cell_t) * intmap->GetArray(key).size());
 
 	return 0;
 }
@@ -234,7 +234,15 @@ cell_t Native_IntMap_GetArrayCell(IPluginContext *pContext, const cell_t *params
 
 	cell_t key = params[2];
 	cell_t index = params[3];
-	return intmap->GetArrayCell(key, index);
+
+	auto vector = intmap->GetArray(key);
+
+	if(vector.size() <= key)
+	{
+		return pContext->ThrowNativeError("Invalid index %i max: %i", index, vector.size());
+	}
+
+	return vector[index];
 }
 
 // public native int  GetArrayLength(const int key);
@@ -243,7 +251,7 @@ cell_t Native_IntMap_GetArrayLength(IPluginContext *pContext, const cell_t *para
 	IntMap *intmap;
 	IntMapHandler::ReadHandle(pContext, params, &intmap);
 
-	return sizeof(cell_t) * intmap->GetArray(params[2]).size();
+	return intmap->GetArray(params[2]).size();
 }
 
 // public native void SetString(const int key, const char[] value);
@@ -426,10 +434,12 @@ cell_t Native_IntMap_IterateCells(IPluginContext *pContext, const cell_t *params
 	IntMap *intmap;
 	IntMapHandler::ReadHandle(pContext, params, &intmap);
 
-	IPluginFunction *callbackFunction = pContext->GetFunctionById(params[1]);
+	cell_t functionID = params[2];
+
+	IPluginFunction *callbackFunction = pContext->GetFunctionById(functionID);
 	if (!callbackFunction)
 	{
-		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+		return pContext->ThrowNativeError("Function id %x is invalid", functionID);
 	}
 
 	intmap->LoopCells(callbackFunction, params);
@@ -443,10 +453,12 @@ cell_t Native_IntMap_IterateArrays(IPluginContext *pContext, const cell_t *param
 	IntMap *intmap;
 	IntMapHandler::ReadHandle(pContext, params, &intmap);
 
-	IPluginFunction *callbackFunction = pContext->GetFunctionById(params[1]);
+	cell_t functionID = params[2];
+
+	IPluginFunction *callbackFunction = pContext->GetFunctionById(functionID);
 	if (!callbackFunction)
 	{
-		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+		return pContext->ThrowNativeError("Function id %x is invalid", functionID);
 	}
 
 	intmap->LoopArrays(callbackFunction, params);
@@ -460,10 +472,12 @@ cell_t Native_IntMap_IterateStrings(IPluginContext *pContext, const cell_t *para
 	IntMap *intmap;
 	IntMapHandler::ReadHandle(pContext, params, &intmap);
 
-	IPluginFunction *callbackFunction = pContext->GetFunctionById(params[1]);
+	cell_t functionID = params[2];
+
+	IPluginFunction *callbackFunction = pContext->GetFunctionById(functionID);
 	if (!callbackFunction)
 	{
-		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+		return pContext->ThrowNativeError("Function id %x is invalid", functionID);
 	}
 
 	intmap->LoopStrings(callbackFunction, params);
