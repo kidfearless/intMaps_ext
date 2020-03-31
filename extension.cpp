@@ -237,7 +237,7 @@ cell_t Native_IntMap_GetArrayCell(IPluginContext *pContext, const cell_t *params
 
 	auto vector = intmap->GetArray(key);
 
-	if(vector.size() <= key)
+	if(vector.size() <= (unsigned)key)
 	{
 		return pContext->ThrowNativeError("Invalid index %i max: %i", index, vector.size());
 	}
